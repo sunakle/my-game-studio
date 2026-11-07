@@ -24,11 +24,11 @@ test('локации, отсутствие демонстрационной сц
  const input=page.getByLabel('Название слоя');await input.click();await page.keyboard.press('End');await page.keyboard.type(' тест');await page.keyboard.press('Control+z');
  expect(await paintedPixels(page)).toBe(1);
  await page.getByRole('button',{name:'Палитры',exact:true}).click();const biomes=page.getByLabel('Биом / локация');
- await expect(biomes.locator('option')).toHaveCount(23);await expect(biomes.locator('optgroup')).toHaveCount(4);
+ await expect(biomes.locator('option')).toHaveCount(17);expect((await biomes.locator('option').allTextContents()).join(' ')).not.toMatch(/Россия|Русь|кремль|Сибир|Ураль/);expect((await biomes.locator('optgroup').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('label')))).join(' ')).not.toContain('Россия');await expect(biomes.locator('optgroup')).toHaveCount(3);
  await biomes.selectOption('castle');await expect(page.locator('.palette-material').filter({hasText:'Металл'})).toBeVisible();
  const castle=await page.locator('.palette-material input[type=color]').evaluateAll(nodes=>nodes.map(n=>(n as HTMLInputElement).value));
- await biomes.selectOption('kremlin');await expect(page.locator('.palette-material').filter({hasText:'Кирпич'})).toBeVisible();
- const kremlin=await page.locator('.palette-material input[type=color]').evaluateAll(nodes=>nodes.map(n=>(n as HTMLInputElement).value));expect(kremlin).not.toEqual(castle);
+ await biomes.selectOption('fortress');await expect(page.locator('.palette-material').filter({hasText:'Металл'})).toBeVisible();
+ const fortress=await page.locator('.palette-material input[type=color]').evaluateAll(nodes=>nodes.map(n=>(n as HTMLInputElement).value));expect(fortress).not.toEqual(castle);
  await expect(page.locator('.palette-layout canvas')).toHaveCount(0);await expect(page.getByText('Небольшая сцена · предпросмотр палитры')).toHaveCount(0);
  await page.getByRole('button',{name:'Сохранить вариант',exact:true}).click();await expect(page.getByRole('status')).toContainText('палитры сохранён');
  await page.screenshot({path:'test-results/palette-update.png'});expect(errors).toEqual([]);

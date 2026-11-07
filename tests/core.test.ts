@@ -33,7 +33,7 @@ it('каждая локация даёт свою палитру, сохраня
   p.materials[0].locks[1]=true;
   expect(generatePalette({...defaultPaletteOptions,mood:b.id,temperature:1,saturation:.4},p).materials[0].colors[1]).toBe(p.materials[0].colors[1]);
  }
- expect(palettes[paletteBiomes.findIndex(b=>b.id==='kremlin')].materials.some(m=>m.name==='Кирпич')).toBe(true);
+ expect(palettes[paletteBiomes.findIndex(b=>b.id==='castle')].materials.some(m=>m.name==='Камень')).toBe(true);
 });
 it('отмена и повтор распознаются по физическим клавишам при русской раскладке',()=>{
  const key={ctrlKey:true,metaKey:false,shiftKey:false,altKey:false,code:'KeyZ',key:'я'};
