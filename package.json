@@ -1,0 +1,38 @@
+{
+  "name": "my-game-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 5173 --strictPort",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:godot": "node scripts/check-godot.mjs"
+  },
+  "dependencies": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "idb": "8.0.4",
+    "fflate": "0.8.3",
+    "zod": "4.6.7",
+    "culori": "4.0.2",
+    "lucide-react": "1.70.0"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/culori": "4.0.1",
+    "@types/node": "26.6.6",
+    "@vitejs/plugin-react": "6.2.1",
+    "vite": "8.3.6",
+    "vitest": "5.1.0",
+    "@playwright/test": "1.65.0",
+    "fake-indexeddb": "6.2.7"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
