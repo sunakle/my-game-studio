@@ -1,6 +1,7 @@
 import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {ArrowDownToLine,ArrowUpRight,BookOpen,Check,ChevronDown,ChevronRight,Clapperboard,Code2,Download,FolderOpen,ImagePlus,Layers2,Leaf,Map,Palette,Plus,Search,Settings2,Undo2,Redo2,Upload,Workflow,X,PanelLeftClose,PanelLeftOpen,Package,Grid2X2} from 'lucide-react';
 import {studio} from './store/studio';
+import {historyShortcut,isTextEditingTarget} from './core/shortcuts';
 import {lastProject,listProjects,loadProject} from './store/persistence';
 import {createProject,createAsset,validateDimensions,type Direction,type Project} from './core/model';
 import {demoProject} from './core/demo';
@@ -17,6 +18,7 @@ export default function App(){useSyncExternalStore(studio.subscribe,studio.snaps
  const selectAsset=(id:string)=>{setAsset(id);setFrame('');setLayer('');setAnimation('');setDirection('down');};
  const open=async(p:Project)=>{await studio.open(p);selectAsset(p.assetOrder[0]??'');setPage('editor');setModal(null);};
  useEffect(()=>{void (async()=>{try{const id=await lastProject(),p=id?await loadProject(id):null;await open(p??createProject());}catch(e){notify(e instanceof Error?e.message:'Не удалось прочитать хранилище.');studio.ready=true;studio.status='Хранилище недоступно · скачивайте архивы';studio.emit();}})();return ()=>{clearTimeout(timer.current);};},[]);
+ useEffect(()=>{const onHistoryKey=(e:KeyboardEvent)=>{if(e.defaultPrevented||isTextEditingTarget(e.target))return;const action=historyShortcut(e);if(!action)return;e.preventDefault();if(action==='undo')studio.undo();else studio.redo();};window.addEventListener('keydown',onHistoryKey);return ()=>window.removeEventListener('keydown',onHistoryKey);},[]);
  useEffect(()=>{const unload=(e:BeforeUnloadEvent)=>{if(studio.before||studio.revision!==studio.savedRevision){e.preventDefault();e.returnValue='';}};window.addEventListener('beforeunload',unload);return ()=>window.removeEventListener('beforeunload',unload);},[]);
  const showProjects=()=>run(async()=>{setProjects(await listProjects());setModal('projects');});
  const quickSave=()=>run(async()=>{await studio.save();notify('Проект сохранён на этом устройстве');});

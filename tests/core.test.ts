@@ -2,7 +2,8 @@ import {describe,it,expect} from 'vitest';
 import {createAsset,createFrame,createProject} from '../src/core/model';
 import {line,flood,composite,copyRegion,clearRegion,pasteRegion,canvasPoint} from '../src/core/pixel';
 import {History} from '../src/core/history';
-import {generatePalette,defaultPaletteOptions} from '../src/core/palette';
+import {generatePalette,defaultPaletteOptions,paletteBiomes} from '../src/core/palette';
+import {historyShortcut} from '../src/core/shortcuts';
 import {saveProject,loadProject} from '../src/store/persistence';
 import {safeUnzip,layoutAtlas,importProjectArchive} from '../src/io/files';
 import {zipSync,strToU8} from 'fflate';
@@ -21,3 +22,22 @@ describe('Хранение и файлы',()=>{
  it('раскладывает кадры с полями и правильными размерами',()=>{const a=createAsset();const f=createFrame(a);a.frames[f.id]=f;a.animations[a.animationOrder[0]].sequences.down.push(f.id);const atlas=layoutAtlas(a);expect(atlas.width).toBe(72);expect(atlas.height).toBe(36);expect(atlas.rects[f.id]).toEqual({x:38,y:2,w:32,h:32});});
 });
 describe('Палитра',()=>{it('сохраняет замки, генерирует 6×4 цвета и восходящую яркость',()=>{const first=generatePalette(defaultPaletteOptions);first.materials[0].locks[2]=true;const next=generatePalette({...defaultPaletteOptions,temperature:1,saturation:1.4},first);expect(next.materials[0].colors[2]).toBe(first.materials[0].colors[2]);expect(next.materials).toHaveLength(6);expect(next.materials.every(m=>m.colors.length===4&&m.colors.every(c=>/^#[\da-f]{6}$/i.test(c)))).toBe(true);});});
+it('каждая локация даёт свою палитру, сохраняет замки и реагирует на базовый цвет',()=>{
+ const palettes=paletteBiomes.map(b=>generatePalette({...defaultPaletteOptions,mood:b.id}));
+ expect(new Set(palettes.map(p=>JSON.stringify(p.materials.map(m=>m.colors)))).size).toBe(paletteBiomes.length);
+ for(const [i,b] of paletteBiomes.entries()){
+  const p=palettes[i];expect(p.materials).toHaveLength(6);
+  for(const m of p.materials){expect(m.colors).toHaveLength(4);expect(m.colors.every(c=>/^#[\da-f]{6}$/i.test(c))).toBe(true);}
+  const changed=generatePalette({...defaultPaletteOptions,mood:b.id,base:'#5673ab'});
+  expect(changed.materials[0].colors).not.toEqual(p.materials[0].colors);
+  p.materials[0].locks[1]=true;
+  expect(generatePalette({...defaultPaletteOptions,mood:b.id,temperature:1,saturation:.4},p).materials[0].colors[1]).toBe(p.materials[0].colors[1]);
+ }
+ expect(palettes[paletteBiomes.findIndex(b=>b.id==='kremlin')].materials.some(m=>m.name==='Кирпич')).toBe(true);
+});
+it('отмена и повтор распознаются по физическим клавишам при русской раскладке',()=>{
+ const key={ctrlKey:true,metaKey:false,shiftKey:false,altKey:false,code:'KeyZ',key:'я'};
+ expect(historyShortcut(key)).toBe('undo');expect(historyShortcut({...key,shiftKey:true})).toBe('redo');
+ expect(historyShortcut({...key,code:'KeyY',key:'н'})).toBe('redo');
+ expect(historyShortcut({...key,ctrlKey:false})).toBeNull();expect(historyShortcut({...key,altKey:true})).toBeNull();
+});
